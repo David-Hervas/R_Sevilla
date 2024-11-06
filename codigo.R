@@ -1,22 +1,16 @@
-# Load packages
-library(clickR)
-library(repmod)
-library(brms)
+# Load package
 library(isaves)
 
-# Load the data
-datos <- mtcars_messy  #Here we use some preloaded data from clickR package
+# Load some data
+datos <- mtcars
+summary(mtcars)
 
-descriptive(datos)
-
-# After some data cleaning... (see clickR package if you are interested in semi-automatic data cleaning)
-datos_f <- nice_names(datos)
-datos_f <- fix_numerics(datos_f)
-datos_f <- fix_dates(datos_f)
-datos_f <- fix_factors(datos_f)
-datos_f <- fix_NA(datos_f)
-
-descriptive(datos_f)
+# After some data cleaning... 
+datos_f <- as.data.frame(lapply(datos, function(x){
+  if(length(unique(x))<=5) x <- factor(x)
+  x
+}))
+summary(datos_f)
 
 # It can be useful to comment the objects for their identification
 comment(datos) <- "Original data" 
@@ -29,11 +23,11 @@ save_incremental()
 ws_ref_table()
 
 # We continue by fitting some models
-mod1 <- brm(mpg ~ hp + wt + am, data=datos_f)
-mod2 <- brm(mpg ~ hp * wt + am, data=datos_f)
+mod1 <- lm(mpg ~ hp + wt + am, data=datos_f)
+mod2 <- lm(mpg ~ hp * wt + am, data=datos_f)
 
-# This takes some time, I don't want to run it again the next time I load my project, so I save it
-save_incremental(annotation = "bayesian modeling")  #In addition to individual comments, you can also have annotation labels for each call to save_incremental
+# This takes some time (potentially). I don't want to run it again the next time I load my project, so I save it
+save_incremental(annotation = "linear models")  #In addition to individual comments, you can also have annotation labels for each call to save_incremental
 
 x <- rnorm(100)
 y <- sample(letters, 10)
@@ -61,18 +55,18 @@ datos_f$mpg[1] #Notice that only the updated version of datos_f was loaded
 
 # What if I want the older version?
 #There are two options:
-load_incremental(hash == "d1d313a2a06040b967d8297a7550579a", overwrite = TRUE) #Overwrite the new version with the old one
-load_incremental(hash == "d1d313a2a06040b967d8297a7550579a") #Load both versions with different names
+#load_incremental(hash == "cb8e263c26ce0683f8e4fb0514e84507", overwrite = TRUE) #Overwrite the new version with the old one
+load_incremental(hash == "cb8e263c26ce0683f8e4fb0514e84507") #Load both versions with different names
 
 # And what happens if I already have objects in my workspace before loading and they have the same names?
 rm(list=ls())
 datos_f <- rnorm(100)
 load_incremental()  #No problem, the exisiting objects are preserved
-load_incremental(hash == "d1d313a2a06040b967d8297a7550579a") #We can even load the older version of "datos_f"
+load_incremental(hash == "cb8e263c26ce0683f8e4fb0514e84507") #We can even load the older version of "datos_f"
 
 datos_f[1]
-datos_f_2024.11.03_23.47.37.796364$mpg[1]
-datos_f_2024.11.03_23.43.10.207812$mpg[1]
+datos_f_2024.11.06_22.46.20.795819$mpg[1]
+datos_f_2024.11.06_22.49.16.452767$mpg[1]
 
 rm(list=ls())
 
@@ -81,7 +75,7 @@ load_incremental(date > as.POSIXct("2024-11-03 23:45:00"))
 rm(list=ls())
 
 #Or 
-load_incremental(class == "data.frame" & size > 20000)
+load_incremental(class == "data.frame" & size > 7000)
 rm(list=ls())
 
 #There is also an option for lazy loading
